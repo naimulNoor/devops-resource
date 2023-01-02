@@ -47,7 +47,7 @@ spec:
         - name: _APP_STATSD_PORT
           value: "8125"
         - name: _APP_SYSTEM_EMAIL_ADDRESS
-          value: "<insert your noreply email address here>" #TODO: insert your smtp noreply email address here
+          value: "noreplay.penciltech.co" #TODO: insert your smtp noreply email address here
         - name: _APP_SMTP_HOST
           value: "smtp.sendgrid.net" #TODO: change this if you aren't using sendgrid
         - name: _APP_SMTP_PORT
@@ -55,7 +55,7 @@ spec:
         - name: _APP_SMTP_SECURE
           value: "tls"
         - name: _APP_SMTP_USERNAME
-          value: "apikey" #TODO: change this if you aren't using sendgrid
+          value: "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" #TODO: change this if you aren't using sendgrid
         - name: _APP_SMTP_PASSWORD
           valueFrom:
             secretKeyRef:

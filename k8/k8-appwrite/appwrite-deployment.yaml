@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: appwrite
+  name: appwrite
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: appwrite
+  template:
+    metadata:
+      labels:
+        io.kompose.network/appwrite: "true"
+        io.kompose.service: appwrite
+    spec:
+      containers:
+      - image: appwrite/appwrite:0.7.2
+        name: appwrite
+        env:
+        - name: _APP_ENV
+          value: development
+        - name: _APP_REDIS_HOST
+          value: redis
+        - name: _APP_REDIS_PORT
+          value: "6379"
+        - name: _APP_DB_HOST
+          value: "mariadb"
+        - name: _APP_DB_PORT
+          value: "3306"
+        - name: _APP_DB_SCHEMA
+          value: "appwrite"
+        - name: _APP_DB_USER
+          value: "user"
+        - name: _APP_DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: appwrite-mariadb
+              key: mysql-password
+        - name: _APP_INFLUXDB_HOST
+          value: influxdb
+        - name: _APP_INFLUXDB_PORT
+          value: "8086"
+        - name: _APP_STATSD_HOST
+          value: telegraf
+        - name: _APP_STATSD_PORT
+          value: "8125"
+        - name: _APP_SYSTEM_EMAIL_ADDRESS
+          value: "<insert your noreply email address here>" #TODO: insert your smtp noreply email address here
+        - name: _APP_SMTP_HOST
+          value: "smtp.sendgrid.net" #TODO: change this if you aren't using sendgrid
+        - name: _APP_SMTP_PORT
+          value: "25"
+        - name: _APP_SMTP_SECURE
+          value: "tls"
+        - name: _APP_SMTP_USERNAME
+          value: "apikey" #TODO: change this if you aren't using sendgrid
+        - name: _APP_SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: appwrite-mail
+              key: smtp-password
+        ports:
+        - containerPort: 80
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: appwrite
+  name: appwrite
+spec:
+  ports:
+  - name: "9501"
+    port: 9501
+    targetPort: 80
+  selector:
+    io.kompose.service: appwrite

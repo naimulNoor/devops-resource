@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: influxdb
+  name: influxdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: influxdb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.network/appwrite: "true"
+        io.kompose.service: influxdb
+    spec:
+      containers:
+      - image: influxdb:1.8-alpine
+        name: appwrite-influxdb
+        ports:
+        - containerPort: 8086
+        volumeMounts:
+        - mountPath: /var/lib/influxdb
+          name: appwrite-influxdb
+      restartPolicy: Always
+      volumes:
+      - name: appwrite-influxdb
+        persistentVolumeClaim:
+          claimName: appwrite-influxdb
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.kompose.service: appwrite-influxdb
+  name: appwrite-influxdb
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: influxdb
+  name: influxdb
+spec:
+  ports:
+  - name: "8086"
+    port: 8086
+    targetPort: 8086
+  selector:
+    io.kompose.service: influxdb

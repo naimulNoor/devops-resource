@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: clamav
+  name: clamav
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: clamav
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.network/appwrite: "true"
+        io.kompose.service: clamav
+    spec:
+      containers:
+      - image: appwrite/clamav:1.2.0
+        name: appwrite-clamav
+        ports:
+        - containerPort: 3310
+        volumeMounts:
+        - mountPath: /storage/uploads
+          name: appwrite-uploads
+      restartPolicy: Always
+      volumes:
+      - name: appwrite-uploads
+        persistentVolumeClaim:
+          claimName: appwrite-uploads
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: clamav
+  name: clamav
+spec:
+  ports:
+  - name: "3310"
+    port: 3310
+    targetPort: 3310
+  selector:
+    io.kompose.service: clamav
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.kompose.service: appwrite-uploads
+  name: appwrite-uploads
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

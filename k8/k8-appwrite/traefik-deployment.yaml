@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: traefik
+  name: traefik
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: traefik
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.network/appwrite: "true"
+        io.kompose.network/gateway: "true"
+        io.kompose.service: traefik
+    spec:
+      containers:
+      - args:
+        - --log.level=DEBUG
+        - --api.insecure=true
+        - --providers.file.directory=/storage/config
+        - --providers.file.watch=true
+        - --providers.docker=false
+        - --providers.docker.exposedByDefault=false
+        - --providers.docker.constraints=Label(`traefik.constraint-label-stack`,`appwrite`)
+        - --entrypoints.web.address=:80
+        - --entrypoints.websecure.address=:443
+        - --accesslog=true
+        image: traefik:2.3
+        name: appwrite-traefik
+        ports:
+        - containerPort: 80
+        - containerPort: 443
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /storage/config
+          name: appwrite-config
+        - mountPath: /storage/certificates
+          name: appwrite-certificates
+      restartPolicy: Always
+      volumes:
+      - name: appwrite-config
+        persistentVolumeClaim:
+          claimName: appwrite-config
+      - name: appwrite-certificates
+        persistentVolumeClaim:
+          claimName: appwrite-certificates
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: traefik
+  name: traefik
+spec:
+  ports:
+  - name: "80"
+    port: 80
+    targetPort: 80
+  - name: "443"
+    port: 443
+    targetPort: 443
+  - name: "9500"
+    port: 9500
+    targetPort: 8080
+  selector:
+    io.kompose.service: traefik
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.kompose.service: appwrite-config
+  name: appwrite-config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.kompose.service: appwrite-certificates
+  name: appwrite-certificates
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

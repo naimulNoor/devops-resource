@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: appwrite-maintenance
+  name: appwrite-maintenance
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: appwrite-maintenance
+  template:
+    metadata:
+      labels:
+        io.kompose.network/appwrite: "true"
+        io.kompose.service: appwrite-maintenance
+    spec:
+      containers:
+      - command:
+        - maintenance
+        image: appwrite/appwrite:0.7.2
+        name: appwrite-maintenance
+      restartPolicy: Always

@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: telegraf
+  name: telegraf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: telegraf
+  template:
+    metadata:
+      labels:
+        io.kompose.network/appwrite: "true"
+        io.kompose.service: telegraf
+    spec:
+      containers:
+      - image: appwrite/telegraf:1.0.0
+        name: appwrite-telegraf
+        ports:
+        - containerPort: 8125
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: telegraf
+  name: telegraf
+spec:
+  ports:
+  - name: "8125"
+    port: 8125
+    targetPort: 8125
+  selector:
+    io.kompose.service: telegraf

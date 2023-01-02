@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: appwrite-schedule
+  name: appwrite-schedule
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: appwrite-schedule
+  template:
+    metadata:
+      labels:
+        io.kompose.network/appwrite: "true"
+        io.kompose.service: appwrite-schedule
+    spec:
+      containers:
+      - command:
+        - schedule
+        image: appwrite/appwrite:0.7.2
+        name: appwrite-schedule
+      restartPolicy: Always
